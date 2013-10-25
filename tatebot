@@ -1,0 +1,539 @@
+"""Viene de tatemac v2.py"""
+""" """
+
+"""NOTA1: para convertir el valor de una valiable en un string, se debe poner str(name_variable), esto
+puede ser util para pasar numeros como una cadena"""
+"""NOTA2: Para el server de rizon las trazas son de 1024 caracteres"""
+
+import socket
+import string
+import sys
+import os
+import time
+import random
+import re
+import csv
+import urllib, urllib2, httplib
+
+
+#FUNCIONES
+def send(msg):
+    s.send('PRIVMSG ' + canal + ' :' +  msg + '\n')
+
+def join(msg):
+    s.send('JOIN %s \n' % channel)
+
+def names_canal(canal):
+    s.send('NAMES %s\n' % canal)
+    
+def nick_canal(names_353,canal):
+    y=''
+    y1=' '
+    y2=' '
+    y3=' '
+    y4=' '
+    y5=' '
+    for x in names_353:
+        y=y+x
+    y = re.split(' ',y)  #divide la variable en una lista de acuerdo a \r\n y la guarda en la variable y
+    
+    c = 0
+    for x in y:
+        if x == '353':
+            y.pop(c)
+        elif x == nick:
+            y.pop(c)
+        elif x == canal:
+            y.pop(c)
+        elif x == server_irc:
+            y.pop(c)
+        c=c+1
+    
+    z1=''
+    z2=''
+    z3=''
+    z4=''
+    z5=''
+    ii=0
+    for x in y:
+        ii=ii+1
+        if ii <= 30:
+            z1= z1+ ' ' + x
+        elif ii <= 60:
+            z2= z2+ ' ' + x
+        elif ii <= 90:
+            z3= z3 + ' ' + x
+        elif ii <= 120:
+            z4= z4 + ' ' + x
+        elif ii <= 150:
+            z5= z5 + ' ' + x
+    if z3 != '':
+        z1 = z1.translate(None,'@&+%~:=') #elimina los caracteres @&+%~:
+        z2 = z2.translate(None,'@&+%~:=') #elimina los caracteres @&+%~:
+        z3 = z3.translate(None,'@&+%~:=') #elimina los caracteres @&+%~:
+        y1 = '' + z1
+        y2 = '' + z2
+        y3 = '' + z3
+        send(y1)
+        send(y2)
+        send(y3)
+        if z4 != '':
+            z4 = z4.translate(None,'@&+%~:=') #elimina los caracteres @&+%~:
+            y4 = '' + z4
+            send(y4)
+        if z5 != '':
+            z5 = z5.translate(None,'@&+%~:=') #elimina los caracteres @&+%~:            
+            y5 = '' + z5
+            send(y5)
+        send(mensage_kuak)
+    else:
+        z1 = z1.translate(None,'@&+%~:=') #elimina los caracteres @&+%~:
+        z2 = z2.translate(None,'@&+%~:=') #elimina los caracteres @&+%~:
+        z3 = z3.translate(None,'@&+%~:=') #elimina los caracteres @&+%~:
+        y1 = '' + z1
+        y2 = '' + z2
+        y3 = '' + z3
+        send(y1)
+        send(y2)
+        send(y3)
+        send(mensage_kuak)
+
+def datos_erepublik(numero_id,EN,R,S,F):
+    #DEFINICION DE VARIABLES
+    HTTPError=''
+    URLError=''
+    dir_citizen=''
+    error=0
+    x=''
+    Q0=0
+    Q1=0
+    Q2=0
+    Q3=0
+    Q4=0
+    Q5=0
+    Q6=0
+    Q7=0
+    e=''
+    E=1
+    FF=1
+    #COMIENZO DEL SCRIPT
+    try:
+        #numero_id = raw_input('>Ingrese el numero de usuario: ')
+        dir_citizen = 'http://www.erepublik.com/en/citizen/profile/'+str(numero_id)
+        numero_id=numero_id.translate(None,'')
+        print dir_citizen
+        if numero_id.isdigit() == True:
+            f = urllib2.urlopen(dir_citizen)  #extrae la codificacion desde la direcion del usuario
+            dataurl = f.read()      
+            pos1=dataurl.find('name="title" content="')+len('name="title" content="')
+            pos2=dataurl.find(' - Citizen of The New World"',pos1)
+            nick_er=dataurl[pos1:pos2]            
+            pos1=dataurl.find('Super Soldier:<strong>')+len('Super Soldier:<strong>')  #Busca la fuerza del usuario
+            pos2=dataurl.find(' /', pos1)  #REVISAR QUE ESTE BIEN ESTO
+            strengh=dataurl[pos1:pos2]
+            strengh=strengh.translate(None,',')  #Elimina la , de la fuerza
+            try:
+                strengh=float(strengh)  #Convierte a entero la fuerza
+            except:
+                print 'ValueError(StandardError): Valor del argumento no apropiado.'
+                error=1
+            print strengh
+            pos1=dataurl.find('Military Rank</strong>')+len('Military Rank</strong>')  #Obtiene el rango militar
+            pos1=dataurl.find('title="', pos1)+len('title="')
+            pos2=dataurl.find('" alt="', pos1)
+            rank=dataurl[pos1:pos2]
+            print rank
+            f.close()
+            print 'La conexión ha cerrado'
+            m1=open('rango.csv','r')
+            m1_csv=csv.reader(m1)
+            for rango,valor in m1_csv:
+                if rango == rank:
+                    x=valor
+                    x=float(x)
+            if EN==1:
+                    print 'Enemigo natural agregado'
+                    E=1.1
+                    EN=0
+            if R==1:
+                x=float(data[data.find(' -r')+len(' -r'):data.find(' -r')+len(' -r')+2])
+                R=0
+                m3_csv=csv.reader(m1)
+                for rango,valor in m3_csv:          #revisar esto
+                    if valor == str(int(x)):
+                        rank=rango
+                        print 'El rango nuevo es', rank
+            if S==1:
+                pos1=data.find(' -s')+3
+                if data.find(' ',pos1) == -1:
+                    strengh=float(data2[pos1:])
+                else:
+                    pos=data2.find(' ',pos1)
+                    strengh=float(data2[pos1:pos2])
+                S=0
+            if F==1:
+                print data
+                pos1=data.find(' -f')+3
+                if data.find(' ',pos1) == -1:
+                    FF=int(data2[pos1:])
+                else:
+                    pos2=data.find(' ',pos1)
+                    FF=data[pos1:pos2]
+                    print FF
+                    FF=float(FF)
+                F=0
+            m1.close()
+            Q0=str(int((((x-1)/20)+0.3)*((strengh/10)+40)*E*FF))
+            Q1=str(int((((x-1)/20)+0.3)*((strengh/10)+40)*1.2*E*FF))
+            Q2=str(int((((x-1)/20)+0.3)*((strengh/10)+40)*1.4*E*FF))
+            Q3=str(int((((x-1)/20)+0.3)*((strengh/10)+40)*1.6*E*FF))
+            Q4=str(int((((x-1)/20)+0.3)*((strengh/10)+40)*1.8*E*FF))
+            Q5=str(int((((x-1)/20)+0.3)*((strengh/10)+40)*2*E*FF))
+            Q6=str(int((((x-1)/20)+0.3)*((strengh/10)+40)*2.2*E*FF))
+            Q7=str(int((((x-1)/20)+0.3)*((strengh/10)+40)*3*E*FF))
+        else:
+            error == 1
+        #I = ((R-1)/20 + 0.3) × ((S/10)+40) (1 + FirePower/100)
+        if error == 1:
+            send('No se puede obtener la fuerza y el rango debido a que es una organizacion o esta mal puesto el id')  #Revisar si esta bien esto, por da un error
+        else:
+            msg= ''+'2'+nick_er+''+', tu fuerza es: '+''+str(int(strengh))+''+', tu rango es: '+''+rank+' ('+str(int(x))+''+') y tus golpes son: '+'14Q0: '+Q0+' || 3Q1: '+Q1+' || 10Q2: '+Q2+' || 12Q3: '+Q3+' || 2Q4: '+Q4+' || 7Q5: '+Q5+' || 4Q6: '+Q6+' || 5Q7: '+Q7+''
+            send(msg)
+    except urllib2.HTTPError, e:
+        print e.code
+        print 'Hubo un error'
+        msg=''+'El usuario no existe'
+        send(msg)
+        pass
+    except HTTPError, e:
+        print 'Ocurrio un error'
+        print e.code
+        pass
+    except URLError, e:
+        print 'Ocurrio un error'
+        print e.reason
+        pass
+    except httplib.BadStatusLine, e:
+        print 'Hubo un error'
+        msg=''+'Ingrese el id limpio, sin formato'
+        send(msg)
+        pass
+    except urllib2.URLError, e:
+        print e.code
+        print 'Hubo un error'
+        msg=''+'El usuario no existe'
+        send(msg)
+        pass
+    except UnboundLocalError:
+        msg=''+'El link esta mal ingresado'
+        send(msg)
+        pass
+
+def reparto_bot(numero_id,Arma_fija,Qarma_inicial):
+    #DEFINICION DE VARIABLES
+    Qarma=0
+    ff=0
+    error_reparto=0
+    cant_arma=0
+
+    #COMIENZO DEL SCRIPT    
+    numero_id=numero_id.translate(None,' ')
+    if numero_id.isdigit() != True:
+        send('Ingrese el link de manera correcta')
+    else:
+        data2=data.lower()
+        if Arma_fija == 0:
+            if data.find(' q') != -1:
+                pos1=data.find(' q')+len(' q')
+                Qarma=data[pos1:pos1+2]
+                Qarma=Qarma.translate(None,' ')
+                if Qarma.isdigit() != True:
+                    send('Ingrese el tipo de arma a usar, como se muestra en este ejemplo q7')
+                    error_reparto=1
+                if int(Qarma)<1:
+                    send('Ingrese la calidad del arma entre 1 y 7')
+                    error_reparto=1
+                if int(Qarma)>7:
+                    send('Ingrese la calidad del arma entre 0 y 7')
+                    error_reparto=1
+            else:
+                send('Ingrese el tipo de arma a usar, como se muestra en este ejemplo q7')
+                error_reparto=1
+        else:
+            Qarma=Qarma_inicial
+
+        if data.find(' -f') != -1:
+            pos1=data.find(' -f')+len(' -f')
+            ff=data[pos1:pos1+3]
+            ff=ff.translate(None,' ')
+            if ff.isdigit() != True:
+                send('Ingrese las -f, como se muestra en este ejemplo: -f65, respetando el orden')
+                error_reparto=1
+        else:
+            send('Ingrese las -f, como se muestra en este ejemplo: -f65, respetando el orden')
+            error_reparto=1
+
+
+        if error_reparto!=1:
+            if Qarma == '1':
+                cant_arma=ff
+                print cant_arma
+            elif Qarma == '2':
+                cant_arma=int(ff)/2
+                cant_arma=str(cant_arma)
+                print cant_arma
+            elif Qarma == '3':
+                cant_arma=int(ff)/3
+                cant_arma=str(cant_arma)
+                print cant_arma
+            elif Qarma == '4':
+                cant_arma=int(ff)/4
+                cant_arma=str(cant_arma)
+                print cant_arma
+            elif Qarma == '5':
+                cant_arma=int(ff)/5
+                cant_arma=str(cant_arma)
+                print cant_arma
+            elif Qarma == '6':
+                cant_arma=int(ff)/6
+                cant_arma=str(cant_arma)
+                print cant_arma
+            elif Qarma == '7':
+                cant_arma=int(ff)/10
+                cant_arma=str(cant_arma)
+                print cant_arma
+            params=urllib.urlencode({'numero id': numero_id, 'Arma': Qarma, 'Cantidad': cant_arma})
+            send(params)
+
+
+#-----------------
+
+#CLASS
+
+
+#IDENTIFICACION
+
+root = 'Pab_Mac'
+print 'Ingrese el nick del bot'
+nick = 'tetamanti1'
+id = 'tatebota'
+fullname = 'Bottatengue En Pytho'
+server = 'irc.rizon.net'
+puerto = 6667
+canal = '#faa.pab_mac'
+buffer = ''
+activa = 0
+join_entrada = 1
+names_353=['']
+operador=['']
+EN=0
+R=0
+F=0
+S=0
+canal_reparto=''
+reparto_armas=0
+numero_id=''
+error_arma_inicial=0
+
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.connect((server,puerto))
+s.send('NICK %s\n' % nick)
+s.send('USER %s %s %s : %s\n' % (id, id, id, fullname))
+s.send('JOIN %s\n' % canal)
+
+
+#send('Soy el nuevo, he vuelvo mejorado')
+
+while True:
+        data = s.recv(4096)
+        #data = data.strip('\n\r')
+        print data
+            
+        if data.find('PING :')!=-1:
+            s.send('PONG :pingis\n\r')
+
+        if data.find(' 439 * :')!=-1:               #determinacion del server
+            pos_server_1=data.find(' 439 * :')        #posicion final del nombre del server
+            server_irc=data[0:pos_server_1]
+      
+        if data.find(server_irc+' 353 '+nick) != -1:
+            x = data
+            pos1=data.find(' 353 ')+5+len(nick)+3       #me da la posicion inicial del canal
+            pos2=data.find(' :'+nick)                   #me da la posicion final del canal
+            canal1=data[pos1:pos2]         
+   
+        if string.lower(data).find(':!salir') != -1:
+            nick_root=data[1:data.find('!')]
+            if nick_root == root:
+                s.send('QUIT \n')
+                break
+            else:
+                send('Usted no tiene permisos para hacer esta funcion')    
+            
+        if string.lower(data).find(':!join ') != -1:
+            pos_canal_1=data.find(' PRIVMSG ')+9
+            pos_canal_2=string.lower(data).find(':!join')-1
+            canal=data[pos_canal_1:pos_canal_2]
+            pos1=data.find('!join')+6
+            channel=data[pos1:]
+            print 'El canal agregado es', channel
+            s.send('JOIN %s\n' % channel)
+            msg=''+nick+' se ha agregado al canal '+channel
+            send(msg)
+            join_entrada=1
+
+        if string.lower(data).find(':!kuak') != -1:
+            pos_canal_1=data.find(' PRIVMSG ')+9    #primer posicion del canal
+            pos_canal_2=data.find(':!kuak')-1       #segunda posicion del canal
+            pos_mensaje_1=pos_canal_2+7             #posicion inicial del mensaje
+            canal=data[pos_canal_1:pos_canal_2]
+            kuaker_1=data[0:data.find('!')]
+            kuaker_x=0
+            for x in operador:
+                if kuaker_1 == (':'+x):
+                    kuaker_x=1
+            if kuaker_x==1:
+                names_canal(canal)                      #llama a la funcion que pide los names del canal
+                mensage_kuak = '0,4ATENCION!!!' + '4,0 ' + data[pos_mensaje_1:]    #Guarda el mensaje en la variable para usarla dentro de la funcion kuak
+
+        
+        if data.find(server_irc+' 353 '+nick) != -1:
+            pos_names_1=data.find(' 353 '+nick)+len(' 353 '+nick+canal)+3
+            pos_names_2=data.find(server_irc+' 366 '+nick)
+            names_353=[data[pos_names_1:pos_names_2]]
+            if data.find(server_irc+' 366 '+nick) != -1:  #BUSCAR SI EN LA CADENA SE ENCUENTRA ESTO server_irc+' 366 '+nick SINO SE ENCUENTRA HAY QUE BUSCAR LA FORMA QUE TOME LA OTRA TRAZA, ENCUENTRE EL PRINCIPIO DE server_irc+' 366 '+nick Y LO META EN UNA LISTA, CONCATENANDOLA CON names_353, tener en cuenta que las trazs son de 1024 caracteres.  
+                tomar_valor=0
+            else:
+                tomar_valor=1
+            #print 'la lista de nombres es:', names_353
+            #print 'La variable tomar valor vale: ', tomar_valor
+            
+        if data.find(server_irc+' 366 '+nick) != -1 and tomar_valor == 1:
+            pos_names_3=data.find(server_irc+' 366 '+nick)
+            names_353.append(data[:pos_names_3])
+            #print 'la lista de nombres ampliada es:', names_353
+            #print 'Entro por el segundo 366'                
+
+        if data.find(':End of /NAMES list.') != -1:
+            pos_canal_1=data.find(' 366 ')+6+len(nick)
+            pos_canal_2=data.find(':End of /NAMES list.')-1
+            canal=data[pos_canal_1:pos_canal_2]
+            if join_entrada == 1:
+                join_entrada = 0
+            else:
+                nick_canal(names_353,canal)
+                names_353=['']
+
+        if string.lower(data).find(':!add oper ') != -1:
+            canal=data[(data.find(' PRIVMSG ')+len('PRIVMSG')+2):data.find(' :')]
+            nick_root=data[1:data.find('!')]
+            if string.lower(nick_root) == string.lower(root):
+                pos_1=string.lower(data).find(':!add oper')+len(':!add oper')+1
+                canal=data[(data.find(' PRIVMSG ')+len('PRIVMSG')+2):data.find(' :')]
+                for x in operador:
+                    if string.lower(x) == string.lower(data[pos_1:]):
+                        oper_msg=1
+                    else:
+                        oper_msg=0
+                if oper_msg== 1:
+                    send('El usuario ya es operador')
+                else:
+                    send('El usuario ha sido agregado como operador')
+                    operador.append(data[pos_1:])
+            else:
+                send('Usted no tiene permisos para hacer esta funcion')
+                
+
+        if string.lower(data).find(':!del oper ') != -1:
+            canal=data[(data.find(' PRIVMSG ')+len('PRIVMSG')+2):data.find(' :')]
+            nick_root=data[1:data.find('!')]
+            if string.lower(nick_root) == string.lower(root):
+                pos_1=data.find(':!del oper')+len(':!del oper')+1
+                canal=data[(data.find(' PRIVMSG ')+len('PRIVMSG')+2):data.find(' :')]
+                for x in operador:
+                    if string.lower(x) == strin.lower(data[pos_1:]):
+                        pos_oper = operador.index(x)
+                        send('El usuario, ', x,' ya no es operador')
+                        operador.remove(x)
+                    else:
+                        send('El usuario no se encuentra en la lista de operadores')
+            else:
+                send('Usted no tiene permisos para hacer esta funcion')
+
+        if string.lower(data).find(':!lista de operadores') != -1:
+            z=''
+            for x in operador:
+                z = z + ' ' + x
+            send(z)
+                
+        if string.lower(data).find(':!militar ') != -1:
+            pos_1=string.lower(data).find(':!militar ')+len(':!militar ')+1
+            canal=data[(data.find(' PRIVMSG ')+len('PRIVMSG')+2):data.find(' :')]
+            numero_id = data[string.lower(data).find(':!militar ')+len(':!militar '):pos_1+7]
+            numero_id=numero_id.translate(None,' ')
+            if data.find('!militar') != -1:
+                if data.find ('-e', data.find('!militar'))!=-1:
+                    print 'Enemigo natural agregado'
+                    EN=1
+            if data.find('!militar') != -1:
+                if data.find('-r', data.find('!militar')) != -1:
+                    R=1
+            if data.find('!militar') != -1:
+                if data.find('-s', data.find('!militar')) != -1:
+                    S=1
+            if data.find('!militar') != -1:
+                if data.find('-f', data.find('!militar')) != -1:
+                    F=1
+            data2=data
+            datos_erepublik(numero_id,EN,R,S,F)
+            EN=0
+            R=0
+            S=0
+            F=0
+
+        if data.find(':!reparto ON') != -1:
+            canal_reparto=data[(data.find(' PRIVMSG ')+len('PRIVMSG')+2):data.find(' :')]
+            canal=data[(data.find(' PRIVMSG ')+len('PRIVMSG')+2):data.find(' :')]
+            pos_1=data.find('q')+len('q')
+            reparto_armas=1
+            Qarma_inicial=data[pos_1:pos_1+2]
+            Qarma_inicial=Qarma_inicial.translate(None,' ')
+            if Qarma_inicial != '':
+                if Qarma_inicial.isdigit()==True:
+                    Arma_fija=1
+                    error_arma_inicial=0
+                else:
+                    send('Se ha cargado mal el arma de reparto, ingresala con minuscula')
+                    error_arma_inicial=1
+            else:
+                Arma_fija=0
+
+            if error_arma_inicial==0:
+                send('REPARTO ABIERTO')
+
+        if data.find(':!reparto OFF') != -1:
+            canal=data[(data.find(' PRIVMSG ')+len('PRIVMSG')+2):data.find(' :')]
+            if canal == canal_reparto:
+                reparto_armas=0
+                Arma_fija=0
+                Qarma_inicial=''
+                send('REPARTO CERRADO')
+
+        if data.find('profile/') != -1:
+            pos1=data.find('profile/')+len('profile/')
+            numero_id=data[pos1:pos1+7]
+            canal=data[(data.find(' PRIVMSG ')+len('PRIVMSG')+2):data.find(' :')]
+            if canal==canal_reparto and reparto_armas==1:
+                reparto_bot(numero_id,Arma_fija,Qarma_inicial)
+
+        if data.find('donate-items/') != -1:
+            pos1=data.find('donate-items/')+len('donate-items/')
+            numero_id=data[pos1:pos1+7]
+            canal=data[(data.find(' PRIVMSG ')+len('PRIVMSG')+2):data.find(' :')]
+            if canal==canal_reparto and reparto_armas==1:
+                reparto_bot(numero_id,Arma_fija,Qarma_inicial)
+            
+        if data.find(':!calentamiento') != -1:
+            canal=data[(data.find(' PRIVMSG ')+len('PRIVMSG')+2):data.find(' :')]
+            send('http://vimeo.com/45784191')
+            send('http://goo.gl/WRu18')
